@@ -62,7 +62,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     http.httpBasic().authenticationEntryPoint(restServicesEntryPoint());
     http.authorizeRequests()
         .antMatchers( "/login").permitAll()
-        .anyRequest().hasRole("ADMIN")
+            .antMatchers("/refreshtoken").permitAll()
+        .antMatchers("/random").hasRole("ADMIN")
         .and().csrf().disable();
     http.sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

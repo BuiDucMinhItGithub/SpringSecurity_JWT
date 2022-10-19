@@ -1,25 +1,43 @@
 package com.jwt.service;
 
 
+import com.jwt.model.RefreshToken;
 import com.jwt.model.UserPrinciple;
+import com.jwt.repository.RefreshTokenRepository;
+import com.jwt.repository.UserRepo;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+
+import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Component
 @Service
 public class JwtService {
+
+  @Autowired
+  RefreshTokenRepository refreshTokenRepository;
+
+  @Autowired
+  UserRepo userRepo;
   private static final String SECRET_KEY = "123456789";
-  private static final long EXPIRE_TIME = 86400000000L;
+  private static final long EXPIRE_TIME = 30000;
   private static final Logger logger = LoggerFactory.getLogger(JwtService.class.getName());
 
   public String generateTokenLogin(Authentication authentication) {
@@ -31,6 +49,12 @@ public class JwtService {
         .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
         .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
         .compact();
+  }
+
+  public String generateTokenFromUsername(String username) {
+    return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+            .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME)).signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+            .compact();
   }
 
   public boolean validateJwtToken(String authToken) {
